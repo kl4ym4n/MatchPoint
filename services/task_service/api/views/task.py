@@ -1,4 +1,5 @@
 import io
+from datetime import timedelta
 
 import pydantic
 from aiohttp import web
@@ -87,8 +88,6 @@ class TaskListHandler(BaseListView):
         except pydantic.ValidationError as e:
             raise BadRequestException(str(e)) from e
 
-        print(task_data)
-
         file = task_data.file
         file_content = file.file
         file_content.seek(0, os.SEEK_END)
@@ -97,9 +96,17 @@ class TaskListHandler(BaseListView):
 
         minio_client.put_object(SETTINGS.MINIO_CONFIG.MINIO_BUCKET, file.filename, file_content, file_length)
 
+        url = minio_client.get_presigned_url(
+            "GET",
+            SETTINGS.MINIO_CONFIG.MINIO_BUCKET,
+            file.filename
+        )
+
         factory: DaoFactory = self.request.app["factory"]
         async with factory.session_maker() as session:
             task_dao = await factory.create_task_dao(session)
+            task_data.filename = file.filename
+            task_data.url = url
             del task_data.file
             task = await task_dao.create(task_data)
 

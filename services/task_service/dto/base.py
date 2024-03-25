@@ -22,12 +22,14 @@ class BaseDTO(BaseModel):
         return super().model_dump(
             by_alias=by_alias,
             **kwargs,
+            exclude={'file'}
         )
 
     def json(self, by_alias=True, **kwargs):
         return super().model_dump_json(
             by_alias=by_alias,
             **kwargs,
+            exclude={'file'}
         )
 
 
