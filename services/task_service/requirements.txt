@@ -1,6 +1,7 @@
 aiohttp
 aiohttp-cors
 sqlalchemy
+sqlalchemy-utils
 psycopg2-binary
 pika
 pydantic
@@ -8,3 +9,4 @@ pydantic-settings
 asyncpg
 alembic
 minio
+typer

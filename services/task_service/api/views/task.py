@@ -2,6 +2,7 @@ import io
 
 import pydantic
 from aiohttp import web
+import os
 
 import dto
 from api.exceptions import BadRequestException
@@ -90,12 +91,18 @@ class TaskListHandler(BaseListView):
 
         file = task_data.file
         file_content = file.file
-        minio_client.put_object(SETTINGS.MINIO_CONFIG.MINIO_BUCKET, file.filename, file_content, file.content_length)
+        file_content.seek(0, os.SEEK_END)
+        file_length = file_content.tell()
+        file_content.seek(0)
+
+        minio_client.put_object(SETTINGS.MINIO_CONFIG.MINIO_BUCKET, file.filename, file_content, file_length)
 
         factory: DaoFactory = self.request.app["factory"]
         async with factory.session_maker() as session:
             task_dao = await factory.create_task_dao(session)
+            del task_data.file
             task = await task_dao.create(task_data)
+
             await session.commit()
 
         return web.json_response({"Task": task.dict(mode="json")})

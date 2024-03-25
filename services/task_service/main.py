@@ -56,7 +56,7 @@ async def _init_factory(app: web.Application):
 
 
 def init_app() -> web.Application:
-    app = web.Application(client_max_size=1024*50000)
+    app = web.Application(client_max_size=1024*1000000)
 
     app.on_startup.extend([_init_factory])
     app.on_cleanup.extend([_close_factory])

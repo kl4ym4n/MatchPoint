@@ -17,7 +17,7 @@ class TaskDTO(BaseDTO):
 
     id: typing.Optional[int] = None
     filename: typing.Optional[str] = None
-    file: FileField
+    file: typing.Optional[FileField] = None
     status: TaskStatus = TaskStatus.QUEUED
     description: typing.Optional[str] = None
     is_deleted: bool = False
