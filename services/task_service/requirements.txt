@@ -1,0 +1,10 @@
+aiohttp
+aiohttp-cors
+sqlalchemy
+psycopg2-binary
+pika
+pydantic
+pydantic-settings
+asyncpg
+alembic
+minio
