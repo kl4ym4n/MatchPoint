@@ -6,28 +6,6 @@ from pydantic_settings import BaseSettings
 BASE_PATH = Path(__file__).parent
 
 
-# Minio config
-class MinioConfig(BaseSettings):
-    MQ_HOST: str = "s3"
-    MQ_PORT: int = 9000
-    MQ_USER: str = "root"
-    MQ_PASSWORD: str = "password"
-
-
-# Rabbit config
-class RabbitConfig(BaseSettings):
-    MQ_HOST: str = "rabbitmq"
-    MQ_PORT: int = 5672
-    MQ_USER: str = "guest"
-    MQ_PASSWORD: str = "guest"
-
-    @property
-    def connection_string(self) -> str:
-        return (
-            f"amqp://{self.MQ_USER}:{self.MQ_PASSWORD}@{self.MQ_HOST}:{self.MQ_PORT}/"
-        )
-
-
 # Postgres config
 class PostgresConfig(BaseSettings):
     DB_HOST: str = "db"
@@ -59,8 +37,6 @@ class PostgresConfig(BaseSettings):
 
 
 class Settings(BaseSettings):
-    QUEUE_NAME: str = "task_queue"
-    RABBIT_CONFIG: RabbitConfig = RabbitConfig()
     POSTGRES_CONFIG: PostgresConfig = PostgresConfig()
 
 

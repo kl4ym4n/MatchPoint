@@ -19,10 +19,10 @@ DATA_TYPE = TypeVar("DATA_TYPE", bound=dto.BaseDTO)
 
 class BaseDAO(Generic[MODEL_TYPE, DATA_TYPE]):
     def __init__(
-        self,
-        model_class: Type[MODEL_TYPE],
-        dto_class: Type[DATA_TYPE],
-        session: sa_async.AsyncSession,
+            self,
+            model_class: Type[MODEL_TYPE],
+            dto_class: Type[DATA_TYPE],
+            session: sa_async.AsyncSession,
     ):
         self.model_class = model_class
         self.dto_class = dto_class
@@ -65,10 +65,10 @@ class BaseDAO(Generic[MODEL_TYPE, DATA_TYPE]):
             await self.session.commit()
 
     async def get_all(
-        self,
-        filters: typing.Optional[typing.Dict[str, typing.Any]] = None,
-        pagination: typing.Optional[dto.Pagination] = None,
-        order_desc: bool = True,
+            self,
+            filters: typing.Optional[typing.Dict[str, typing.Any]] = None,
+            pagination: typing.Optional[dto.Pagination] = None,
+            order_desc: bool = True,
     ) -> typing.List[DATA_TYPE]:
         if filters is None:
             filters = {}
@@ -77,6 +77,7 @@ class BaseDAO(Generic[MODEL_TYPE, DATA_TYPE]):
         for attr, value in filters.items():
             if hasattr(self.model_class, attr):
                 query = query.filter(getattr(self.model_class, attr) == value)
+        query = query.filter(False == getattr(self.model_class, 'is_deleted'))
         if pagination:
             pagination.count = (
                 await self.session.execute(

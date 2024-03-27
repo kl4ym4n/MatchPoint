@@ -19,15 +19,15 @@ class MinioConfig(BaseSettings):
 
 # Rabbit config
 class RabbitConfig(BaseSettings):
-    MQ_HOST: str = "rabbitmq"
-    MQ_PORT: int = 5672
-    MQ_USER: str = "guest"
-    MQ_PASSWORD: str = "guest"
+    RABBIT_HOST: str = "rabbitmq"
+    RABBIT_PORT: int = 5672
+    RABBIT_USER: str = "guest"
+    RABBIT_PASSWORD: str = "guest"
 
     @property
     def connection_string(self) -> str:
         return (
-            f"amqp://{self.MQ_USER}:{self.MQ_PASSWORD}@{self.MQ_HOST}:{self.MQ_PORT}/"
+            f"amqp://{self.RABBIT_USER}:{self.RABBIT_PASSWORD}@{self.RABBIT_HOST}:{self.RABBIT_PORT}/"
         )
 
 

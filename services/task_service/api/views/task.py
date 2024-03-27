@@ -1,4 +1,5 @@
 import io
+import json
 from datetime import timedelta
 
 import pydantic
@@ -6,6 +7,7 @@ from aiohttp import web
 import os
 
 import dto
+import pika
 from api.exceptions import BadRequestException
 from api.exceptions import NotFoundException
 from api.views.base import BaseListView
@@ -61,7 +63,10 @@ class TaskHandler(BaseView):
         factory: DaoFactory = self.request.app["factory"]
         async with factory.session_maker() as session:
             task_dao = await factory.create_task_dao(session)
-            await task_dao.delete(task_id)
+            task_data = dto.TaskDTO(**{"is_deleted": "true"})
+            task = await task_dao.update(task_id, task_data)
+            if task is None:
+                raise NotFoundException(f"Task with id {task_id} does not exist")
             await session.commit()
         return web.json_response({})
 
@@ -109,6 +114,17 @@ class TaskListHandler(BaseListView):
             task_data.url = url
             del task_data.file
             task = await task_dao.create(task_data)
+
+            connection = pika.BlockingConnection(pika.ConnectionParameters(SETTINGS.RABBIT_CONFIG.RABBIT_HOST))
+            channel = connection.channel()
+
+            channel.queue_declare(queue=SETTINGS.QUEUE_NAME)
+
+            message = {id: task.id, url: task.url}
+
+            channel.basic_publish(exchange='', routing_key=SETTINGS.QUEUE_NAME, body=json.dumps(message))
+
+            connection.close()
 
             await session.commit()
 
