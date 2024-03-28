@@ -6,23 +6,43 @@ import numpy as np
 import struct
 from itertools import combinations
 from aio_pika import connect, Message
+from config import SETTINGS
+from minio import Minio
+
+minio_client = Minio(SETTINGS.MINIO_CONFIG.MINIO_HOST + ":" + SETTINGS.MINIO_CONFIG.MINIO_PORT,
+                     access_key=SETTINGS.MINIO_CONFIG.MINIO_ACCESS_KEY,
+                     secret_key=SETTINGS.MINIO_CONFIG.MINIO_SECRET_KEY,
+                     secure=False)
 
 
 async def callback(message: Message):
     async with message.process():
-        extract_archive("kpts.zip", "temp")
-        filenames = get_filenames_in_directory("temp/kpts")
 
-        file_pairs = list(combinations(filenames, 2))
-        for pair in file_pairs:
-            keypoints1, descriptors1 = read_binary_file(pair[0])
-            keypoints2, descriptors2 = read_binary_file(pair[1])
+        try:
+            decoded_message = message.body.decode()
+            # update task status
 
-            matches = match_and_count_matches(descriptors1, descriptors2)
+            try:
+                response = minio_client.get_object(SETTINGS.MINIO_CONFIG.MINIO_BUCKET, decoded_message.object)
+                extract_archive(response, "temp")
+            finally:
+                response.close()
+                response.release_conn()
 
-            print(f"Number of matches between {pair[0]} and {pair[1]}: {matches}")
+            filenames = get_filenames_in_directory("temp/" + decoded_message.object)
 
-        print(f"Received message: {message.body.decode()}")
+            file_pairs = list(combinations(filenames, 2))
+            for pair in file_pairs:
+                keypoints1, descriptors1 = read_binary_file(pair[0])
+                keypoints2, descriptors2 = read_binary_file(pair[1])
+
+                matches = match_and_count_matches(descriptors1, descriptors2)
+
+                print(f"Number of matches between {pair[0]} and {pair[1]}: {matches}")
+
+        except Exception as err:
+
+                # set status to error and save error in result
 
 
 def get_filenames_in_directory(directory):
@@ -75,9 +95,9 @@ def extract_archive(archive_path, extract_dir):
 
 
 async def main():
-    connection = await connect('amqp://guest:guest@rabbitmq/')
+    connection = await connect(SETTINGS.RABBIT_CONFIG.connection_string)
     channel = await connection.channel()
-    queue = await channel.declare_queue('task_queue')
+    queue = await channel.declare_queue(SETTINGS.QUEUE_NAME)
 
     await queue.consume(callback)
 

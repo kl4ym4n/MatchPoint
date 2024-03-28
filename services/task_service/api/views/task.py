@@ -120,7 +120,7 @@ class TaskListHandler(BaseListView):
 
             channel.queue_declare(queue=SETTINGS.QUEUE_NAME)
 
-            message = {id: task.id, url: task.url}
+            message = {id: task.id, object: file.filename}
 
             channel.basic_publish(exchange='', routing_key=SETTINGS.QUEUE_NAME, body=json.dumps(message))
 
