@@ -1,30 +1,28 @@
-import io
 import json
-from datetime import timedelta
 
 import pydantic
 from aiohttp import web
 import os
 
-import dto
+from services import dto
 import pika
 from api.exceptions import BadRequestException
 from api.exceptions import NotFoundException
 from api.views.base import BaseListView
 from api.views.base import BaseView
-from dao.factory import DaoFactory
+from services.dao.factory import DaoFactory
 from minio import Minio
 
-from config import SETTINGS
+from services import config
 
 __all__ = [
     "TaskHandler",
     "TaskListHandler",
 ]
 
-minio_client = Minio(SETTINGS.MINIO_CONFIG.MINIO_HOST + ":" + SETTINGS.MINIO_CONFIG.MINIO_PORT,
-                     access_key=SETTINGS.MINIO_CONFIG.MINIO_ACCESS_KEY,
-                     secret_key=SETTINGS.MINIO_CONFIG.MINIO_SECRET_KEY,
+minio_client = Minio(config.SETTINGS.MINIO_CONFIG.MINIO_HOST + ":" + config.SETTINGS.MINIO_CONFIG.MINIO_PORT,
+                     access_key=config.SETTINGS.MINIO_CONFIG.MINIO_ACCESS_KEY,
+                     secret_key=config.SETTINGS.MINIO_CONFIG.MINIO_SECRET_KEY,
                      secure=False)
 
 
@@ -115,14 +113,14 @@ class TaskListHandler(BaseListView):
             del task_data.file
             task = await task_dao.create(task_data)
 
-            connection = pika.BlockingConnection(pika.ConnectionParameters(SETTINGS.RABBIT_CONFIG.RABBIT_HOST))
+            connection = pika.BlockingConnection(pika.ConnectionParameters(config.SETTINGS.RABBIT_CONFIG.RABBIT_HOST))
             channel = connection.channel()
 
-            channel.queue_declare(queue=SETTINGS.QUEUE_NAME)
+            channel.queue_declare(queue=config.SETTINGS.QUEUE_NAME)
 
             message = {id: task.id, object: file.filename}
 
-            channel.basic_publish(exchange='', routing_key=SETTINGS.QUEUE_NAME, body=json.dumps(message))
+            channel.basic_publish(exchange='', routing_key=config.SETTINGS.QUEUE_NAME, body=json.dumps(message))
 
             connection.close()
 

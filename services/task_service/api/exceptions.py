@@ -1,8 +1,8 @@
 import typing
 from http import HTTPStatus
 
-import dto.base as dto
-from dto.base import Status
+import services.dto.base as dto
+from services.dto.base import Status
 
 
 class TaskServiceException(Exception):

@@ -6,8 +6,8 @@ from typing import TypeVar
 import sqlalchemy as sa
 import sqlalchemy.ext.asyncio as sa_async
 
-import dto
-from dao.models import Base
+from services import dto
+from services.dao.models import Base
 
 __all__ = [
     "BaseDAO",

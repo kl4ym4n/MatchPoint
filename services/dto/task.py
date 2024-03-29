@@ -3,8 +3,8 @@ import typing
 from aiohttp.web_request import FileField
 from pydantic import ConfigDict
 
-from dto.base import BaseDTO
-from dto.base import TaskStatus
+from services.dto.base import BaseDTO
+from services.dto.base import TaskStatus
 from sqlalchemy.dialects.postgresql import JSONB
 
 __all__ = [

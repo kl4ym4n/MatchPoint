@@ -2,7 +2,7 @@ import sqlalchemy as sa
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.dialects.postgresql import JSONB
 
-from dto.base import TaskStatus
+from services.dto.base import TaskStatus
 
 Base = declarative_base()
 

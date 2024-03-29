@@ -2,10 +2,11 @@ FROM python:3.11-slim
 
 WORKDIR /MatchPoint
 ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH="$PYTHONPATH:/MatchPoint"
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY ../.. .
+COPY ../../../.. .
 
-CMD ["python", "-u", "worker.py"]
+CMD ["python", "-u", "services/worker/worker.py"]

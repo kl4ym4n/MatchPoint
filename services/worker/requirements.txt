@@ -2,3 +2,7 @@ aio-pika
 opencv-python-headless
 numpy
 minio
+pydantic-settings
+aiohttp
+sqlalchemy
+sqlalchemy-utils

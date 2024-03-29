@@ -1,8 +1,8 @@
 import sqlalchemy.ext.asyncio as sa_async
 
-import dto
-from dao.base import BaseDAO
-from dao.models import Task
+from services import dto
+from services.dao.base import BaseDAO
+from services.dao.models import Task
 
 __all__ = ["DaoFactory", "SqlAlchemyEngine"]
 

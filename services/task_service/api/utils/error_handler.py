@@ -2,7 +2,7 @@ import http
 
 from aiohttp import web
 
-import services.task_service.dto.base as dto
+import services.dto.base as dto
 from services.task_service.api.exceptions import TaskServiceException
 
 INTERNAL_ERROR_STATUS = dto.Status(error=True, message="Internal server error")

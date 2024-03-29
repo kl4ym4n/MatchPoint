@@ -9,25 +9,25 @@ BASE_PATH = Path(__file__).parent
 # Minio config
 class MinioConfig(BaseSettings):
     MINIO_HOST: str = "s3"
-    MINIO_PORT: int = 9000
+    MINIO_PORT: str = "9000"
     MINIO_USER: str = "root"
     MINIO_PASSWORD: str = "password"
     MINIO_BUCKET: str = "taskfiles"
-    MINIO_ACCESS_KEY: str = "access_key"
-    MINIO_SECRET_KEY: str = "secret_key"
+    MINIO_ACCESS_KEY: str = "5JVspZSmZhWNvAErGe86"
+    MINIO_SECRET_KEY: str = "tWyIWjwfDMwNEaoQqqrcVU21IWwTGF4HQUvGtdsn"
 
 
 # Rabbit config
 class RabbitConfig(BaseSettings):
-    MQ_HOST: str = "rabbitmq"
-    MQ_PORT: int = 5672
-    MQ_USER: str = "guest"
-    MQ_PASSWORD: str = "guest"
+    RABBIT_HOST: str = "rabbitmq"
+    RABBIT_PORT: int = 5672
+    RABBIT_USER: str = "guest"
+    RABBIT_PASSWORD: str = "guest"
 
     @property
     def connection_string(self) -> str:
         return (
-            f"amqp://{self.MQ_USER}:{self.MQ_PASSWORD}@{self.MQ_HOST}:{self.MQ_PORT}/"
+            f"amqp://{self.RABBIT_USER}:{self.RABBIT_PASSWORD}@{self.RABBIT_HOST}:{self.RABBIT_PORT}/"
         )
 
 
