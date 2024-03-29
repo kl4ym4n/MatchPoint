@@ -6,3 +6,4 @@ pydantic-settings
 aiohttp
 sqlalchemy
 sqlalchemy-utils
+asyncpg

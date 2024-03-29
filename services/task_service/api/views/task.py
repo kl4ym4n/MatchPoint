@@ -61,7 +61,7 @@ class TaskHandler(BaseView):
         factory: DaoFactory = self.request.app["factory"]
         async with factory.session_maker() as session:
             task_dao = await factory.create_task_dao(session)
-            task_data = dto.TaskDTO(**{"is_deleted": "true"})
+            task_data = dto.TaskDTO(**{"is_deleted": "true", "id": task_id})
             task = await task_dao.update(task_id, task_data)
             if task is None:
                 raise NotFoundException(f"Task with id {task_id} does not exist")
@@ -92,16 +92,20 @@ class TaskListHandler(BaseListView):
             raise BadRequestException(str(e)) from e
 
         file = task_data.file
+
+        if file is None:
+            raise BadRequestException(f"File required")
+
         file_content = file.file
         file_content.seek(0, os.SEEK_END)
         file_length = file_content.tell()
         file_content.seek(0)
 
-        minio_client.put_object(SETTINGS.MINIO_CONFIG.MINIO_BUCKET, file.filename, file_content, file_length)
+        minio_client.put_object(config.SETTINGS.MINIO_CONFIG.MINIO_BUCKET, file.filename, file_content, file_length)
 
         url = minio_client.get_presigned_url(
             "GET",
-            SETTINGS.MINIO_CONFIG.MINIO_BUCKET,
+            config.SETTINGS.MINIO_CONFIG.MINIO_BUCKET,
             file.filename
         )
 
@@ -118,7 +122,7 @@ class TaskListHandler(BaseListView):
 
             channel.queue_declare(queue=config.SETTINGS.QUEUE_NAME)
 
-            message = {id: task.id, object: file.filename}
+            message = {"id": task.id, "object": file.filename}
 
             channel.basic_publish(exchange='', routing_key=config.SETTINGS.QUEUE_NAME, body=json.dumps(message))
 
