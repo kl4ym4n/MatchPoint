@@ -7,3 +7,5 @@ aiohttp
 sqlalchemy
 sqlalchemy-utils
 asyncpg
+wget
+psycopg2-binary

@@ -51,4 +51,3 @@ def read_binary_file(file_path):
 def extract_archive(archive_path, extract_dir):
     with zipfile.ZipFile(archive_path, 'r') as zip_ref:
         zip_ref.extractall(extract_dir)
-        print(f"Archive extracted to {extract_dir}")

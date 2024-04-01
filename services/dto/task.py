@@ -5,7 +5,6 @@ from pydantic import ConfigDict
 
 from services.dto.base import BaseDTO
 from services.dto.base import TaskStatus
-from sqlalchemy.dialects.postgresql import JSONB
 
 __all__ = [
     "TaskDTO",
@@ -22,4 +21,4 @@ class TaskDTO(BaseDTO):
     description: typing.Optional[str] = None
     is_deleted: bool = False
     url: typing.Optional[str] = None
-    result: typing.Optional[JSONB] = None
+    result: typing.Optional[str] = None
