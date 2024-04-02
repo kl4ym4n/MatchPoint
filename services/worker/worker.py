@@ -2,15 +2,15 @@ import asyncio
 import json
 import os
 import shutil
-from itertools import combinations
-
-import wget
 from aio_pika import connect, Message
 
 import utils
 from services import config
 from services import dto
 from handlers.base import BaseTaskHandler
+from concurrent.futures import ThreadPoolExecutor
+
+executor = ThreadPoolExecutor()
 
 
 async def callback(message: Message):
@@ -22,46 +22,29 @@ async def callback(message: Message):
             task_handler = BaseTaskHandler(config.SETTINGS.POSTGRES_CONFIG.connection_string)
             await task_handler.update_task({"task_id": decoded_message['id'], "status": dto.TaskStatus.RUNNING})
 
-            wget.download(decoded_message['url'], decoded_message['object'])
-
-            utils.extract_archive(decoded_message['object'], "temp")
-
-            temp_name = "temp/" + decoded_message['object'].replace('.zip', '')
-
-            filenames = utils.get_filenames_in_directory(temp_name)
-
-            file_pairs = list(combinations(filenames, 2))
-            json_res = {}
-            count = 0
-            for pair in file_pairs:
-                count += 1
-                keypoints1, descriptors1 = utils.read_binary_file(pair[0])
-                keypoints2, descriptors2 = utils.read_binary_file(pair[1])
-
-                matches = utils.match_and_count_matches(descriptors1, descriptors2)
-
-                json_res[count] = f"Number of matches between {pair[0]} and {pair[1]}: {matches}"
+            result = await asyncio.get_event_loop().run_in_executor(executor, utils.process_task, decoded_message)
 
             await task_handler.update_task(
-                {"task_id": decoded_message['id'], "status": dto.TaskStatus.RUNNING, "result": 'json.dumps(json_res)'})
-
-            if os.path.exists(decoded_message['object']):
-                os.remove(decoded_message['object'])
-            if os.path.exists(temp_name):
-                shutil.rmtree(temp_name)
-
-
+                {"task_id": decoded_message['id'], "status": dto.TaskStatus.COMPLETED,
+                 "result": json.dumps(result)})
 
         except Exception as err:
 
             await task_handler.update_task(
-                {"task_id": decoded_message['id'], "status": dto.TaskStatus.ERROR})
+                {"task_id": decoded_message['id'], "status": dto.TaskStatus.ERROR, "result": err})
+
+            temp_name = "temp/" + message['object'].replace('.zip', '')
+            if os.path.exists(message['object']):
+                os.remove(message['object'])
+            if os.path.exists(temp_name):
+                shutil.rmtree(temp_name)
 
 
 async def main():
     connection = await connect(config.SETTINGS.RABBIT_CONFIG.connection_string)
 
     channel = await connection.channel()
+    await channel.set_qos(prefetch_count=1)
     queue = await channel.declare_queue(config.SETTINGS.QUEUE_NAME)
 
     await queue.consume(callback)

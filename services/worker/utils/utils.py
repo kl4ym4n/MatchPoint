@@ -1,8 +1,11 @@
 import zipfile
-import os
 import cv2
 import numpy as np
 import struct
+import os
+import shutil
+from itertools import combinations
+import wget
 
 
 def get_filenames_in_directory(directory):
@@ -51,3 +54,32 @@ def read_binary_file(file_path):
 def extract_archive(archive_path, extract_dir):
     with zipfile.ZipFile(archive_path, 'r') as zip_ref:
         zip_ref.extractall(extract_dir)
+
+
+def process_task(message):
+    wget.download(message['url'], message['object'])
+
+    extract_archive(message['object'], "temp")
+
+    temp_name = "temp/" + message['object'].replace('.zip', '')
+
+    filenames = get_filenames_in_directory(temp_name)
+
+    file_pairs = list(combinations(filenames, 2))
+    count = 0
+    result = {}
+    for pair in file_pairs:
+        count += 1
+        keypoints1, descriptors1 = read_binary_file(pair[0])
+        keypoints2, descriptors2 = read_binary_file(pair[1])
+
+        matches = match_and_count_matches(descriptors1, descriptors2)
+
+        result[count] = f"Number of matches between {pair[0]} and {pair[1]}: {matches}"
+
+    if os.path.exists(message['object']):
+        os.remove(message['object'])
+    if os.path.exists(temp_name):
+        shutil.rmtree(temp_name)
+
+    return result

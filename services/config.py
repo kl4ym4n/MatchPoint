@@ -63,6 +63,7 @@ class PostgresConfig(BaseSettings):
 
 class Settings(BaseSettings):
     QUEUE_NAME: str = "task_queue"
+    EXCHANGE_NAME: str = 'task_exchange'
     RABBIT_CONFIG: RabbitConfig = RabbitConfig()
     POSTGRES_CONFIG: PostgresConfig = PostgresConfig()
     MINIO_CONFIG: MinioConfig = MinioConfig()
