@@ -25,6 +25,13 @@ class BaseDTO(BaseModel):
             exclude={'file'}
         )
 
+    def list_dict(self, by_alias=True, **kwargs):
+        return super().model_dump(
+            by_alias=by_alias,
+            **kwargs,
+            exclude={'file', 'result', 'url'}
+        )
+
     def json(self, by_alias=True, **kwargs):
         return super().model_dump_json(
             by_alias=by_alias,

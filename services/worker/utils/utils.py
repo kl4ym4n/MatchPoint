@@ -16,7 +16,7 @@ def get_filenames_in_directory(directory):
     return filenames
 
 
-def match_and_count_matches(descriptors1, descriptors2):
+def match_and_count_matches(descriptors1, descriptors2, kp1, kp2):
     # Initialize feature matcher
     bf = cv2.BFMatcher()
 
@@ -25,8 +25,21 @@ def match_and_count_matches(descriptors1, descriptors2):
     des2 = np.array(descriptors2, dtype=np.float32)
     matches = bf.knnMatch(cv2.UMat(des1), cv2.UMat(des2), k=2)
 
+    # Apply ratio test
+    good_matches = []
+    for m, n in matches:
+        if m.distance < 0.8 * n.distance:
+            good_matches.append(m)
+
+    mutual_matches = []
+    for match in good_matches:
+        reverse_match = next((m for m in good_matches if m.queryIdx == match.trainIdx and m.trainIdx == match.queryIdx),
+                             None)
+        if reverse_match:
+            mutual_matches.append(match)
+
     # Count matches
-    num_matches = len(matches)
+    num_matches = len(mutual_matches)
 
     return num_matches
 
@@ -73,7 +86,7 @@ def process_task(message):
         keypoints1, descriptors1 = read_binary_file(pair[0])
         keypoints2, descriptors2 = read_binary_file(pair[1])
 
-        matches = match_and_count_matches(descriptors1, descriptors2)
+        matches = match_and_count_matches(descriptors1, descriptors2, keypoints1, keypoints2)
 
         result[count] = f"Number of matches between {pair[0]} and {pair[1]}: {matches}"
 

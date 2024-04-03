@@ -3,6 +3,9 @@ from api.config_api import API_SETTINGS
 from api.routes import setup_routes
 from services import config
 from services.dao.factory import DaoFactory
+from services.task_service.api.middlewares import auth_middleware
+
+MAX_BODY_SIZE = 1024 * 1000000
 
 
 async def _close_factory(app: web.Application):
@@ -14,7 +17,7 @@ async def _init_factory(app: web.Application):
 
 
 def init_app() -> web.Application:
-    app = web.Application(client_max_size=1024 * 1000000)
+    app = web.Application(client_max_size=MAX_BODY_SIZE, middlewares=[auth_middleware])
 
     app.on_startup.extend([_init_factory])
     app.on_cleanup.extend([_close_factory])

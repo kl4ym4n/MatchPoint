@@ -80,7 +80,7 @@ class TaskListHandler(BaseListView):
 
         return web.json_response(
             {
-                "tasks": [t.dict(mode="json") for t in tasks],
+                "tasks": [t.list_dict(mode="json") for t in tasks],
                 "meta": pagination.dict(),
             }
         )
